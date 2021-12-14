@@ -82,6 +82,8 @@ export const signOperation = ({
               transaction.parameters?.value
             ).send();
 
+            console.trace({ res });
+
             signature = res.raw.opOb.signature;
             opbytes = res.raw.opbytes;
             break;
