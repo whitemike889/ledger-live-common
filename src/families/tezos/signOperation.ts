@@ -6,7 +6,7 @@ import { TezosToolkit } from "@taquito/taquito";
 import type { Transaction } from "./types";
 import type { Account, SignOperationEvent } from "../../types";
 import { withDevice } from "../../hw/deviceAccess";
-import { getEnv } from "../../env";
+// import { getEnv } from "../../env";
 import { FeeNotLoaded } from "@ledgerhq/errors";
 
 export const signOperation = ({
