@@ -45,6 +45,8 @@ export const signOperation = ({
         o.next({ type: "device-signature-requested" });
 
         let res, signature, opbytes;
+
+        console.trace("bite", transaction);
         switch (transaction.mode) {
           case "send":
             res = await tezos.contract.transfer({
@@ -71,6 +73,7 @@ export const signOperation = ({
             opbytes = res.raw.opbytes;
             break;
           case "contract": {
+            console.trace("contract", "ok");
             if (!transaction.parameters?.entrypoint) {
               res = null;
               opbytes = null;
@@ -78,11 +81,20 @@ export const signOperation = ({
             }
 
             const contract = await tezos.contract.at(transaction.recipient);
-            res = await contract?.[transaction.parameters?.entrypoint]?.(
-              transaction.parameters?.value
-            ).send();
+            const methods = contract.parameterSchema.ExtractSignatures();
+            console.trace("methods", JSON.stringify(methods, null, 2));
 
-            console.trace({ res });
+            const incrementParams = contract?.methods?.[
+              transaction.parameters?.entrypoint
+            ]?.(transaction.parameters?.value);
+
+            console.trace("params", JSON.stringify(incrementParams, null, 2));
+
+            res = await contract?.methods?.[
+              transaction.parameters?.entrypoint
+            ]?.(transaction.parameters?.value).send();
+
+            console.trace("res", { res });
 
             signature = res.raw.opOb.signature;
             opbytes = res.raw.opbytes;

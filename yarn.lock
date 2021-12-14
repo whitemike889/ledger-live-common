@@ -1351,10 +1351,9 @@
   dependencies:
     bignumber.js "^9.0.1"
 
-"@ledgerhq/live-app-sdk@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/live-app-sdk/-/live-app-sdk-0.2.0.tgz#d50ca7ddd07eeeb564728a1998bf0fb154533315"
-  integrity sha512-OwyEu/Ue/D/mw/Fgc4HrXm4jlzD43r7nfLXC913U+YprPapUcT9e6cc28xIEYXnJqY0GVV/ISdP7ODGfJC21Xg==
+"@ledgerhq/live-app-sdk@https://github.com/klambert-ledger/live-app-sdk.git#c55e89fd6a54c15ae790a73ab10ab4a9089dbdd1":
+  version "0.5.0"
+  resolved "https://github.com/klambert-ledger/live-app-sdk.git#c55e89fd6a54c15ae790a73ab10ab4a9089dbdd1"
   dependencies:
     bignumber.js "^9.0.1"
     json-rpc-2.0 "^0.2.16"

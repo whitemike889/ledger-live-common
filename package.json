@@ -61,7 +61,7 @@
     "@ledgerhq/hw-transport-mocker": "6.19.0",
     "@ledgerhq/hw-transport-node-speculos": "6.19.0",
     "@ledgerhq/json-bignumber": "^1.1.0",
-    "@ledgerhq/live-app-sdk": "^0.2.0",
+    "@ledgerhq/live-app-sdk": "https://github.com/klambert-ledger/live-app-sdk.git#c55e89fd6a54c15ae790a73ab10ab4a9089dbdd1",
     "@ledgerhq/logs": "6.10.0",
     "@polkadot/types": "6.11.1",
     "@polkadot/types-known": "6.11.1",
