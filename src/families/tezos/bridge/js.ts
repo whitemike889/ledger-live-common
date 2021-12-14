@@ -154,7 +154,7 @@ const prepareTransaction = async (
   const { tezosResources } = account;
   if (!tezosResources) throw new Error("tezosResources is missing");
 
-  const tezos = new TezosToolkit(getEnv("API_TEZOS_NODE"));
+  const tezos = new TezosToolkit("https://hangzhounet.api.tez.ie");
 
   tezos.setProvider({
     signer: {
@@ -244,7 +244,7 @@ const estimateMaxSpendable = async ({
 };
 
 const broadcast = async ({ signedOperation: { operation } }) => {
-  const tezos = new TezosToolkit(getEnv("API_TEZOS_NODE"));
+  const tezos = new TezosToolkit("https://hangzhounet.api.tez.ie");
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const hash = await tezos.contract.context.injector.inject(

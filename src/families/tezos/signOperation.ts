@@ -28,7 +28,7 @@ export const signOperation = ({
 
         const { freshAddressPath, freshAddress } = account;
 
-        const tezos = new TezosToolkit(getEnv("API_TEZOS_NODE"));
+        const tezos = new TezosToolkit("https://hangzhounet.api.tez.ie");
 
         const ledgerSigner = new LedgerSigner(
           transport,
