@@ -1,4 +1,5 @@
 import type { BigNumber } from "bignumber.js";
+import type { MichelsonV1Expression } from "@taquito/rpc";
 import type {
   CoreAmount,
   CoreBigInt,
@@ -38,7 +39,11 @@ export const tezosOperationTag = {
   OPERATION_TAG_DELEGATION: 10,
 };
 
-export type TezosOperationMode = "send" | "delegate" | "undelegate";
+export type TezosOperationMode =
+  | "send"
+  | "delegate"
+  | "undelegate"
+  | "contract";
 
 export type TezosOperationTag =
   typeof tezosOperationTag[keyof typeof tezosOperationTag];
@@ -137,6 +142,10 @@ export type Transaction = TransactionCommon & {
   gasLimit: BigNumber | null | undefined;
   storageLimit: BigNumber | null | undefined;
   taquitoError: string | null | undefined;
+  parameters?: {
+    entrypoint: string;
+    value: MichelsonV1Expression;
+  };
 };
 export type TransactionRaw = TransactionCommonRaw & {
   family: "tezos";
@@ -146,6 +155,10 @@ export type TransactionRaw = TransactionCommonRaw & {
   gasLimit: string | null | undefined;
   storageLimit: string | null | undefined;
   taquitoError: string | null | undefined;
+  parameters?: {
+    entrypoint: string;
+    value: MichelsonV1Expression;
+  };
 };
 export const reflect = (declare: (arg0: string, arg1: Spec) => void) => {
   declare("TezosLikeAddress", {

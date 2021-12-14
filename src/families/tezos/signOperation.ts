@@ -70,6 +70,22 @@ export const signOperation = ({
             });
             opbytes = res.raw.opbytes;
             break;
+          case "contract": {
+            if (!transaction.parameters?.entrypoint) {
+              res = null;
+              opbytes = null;
+              break;
+            }
+
+            const contract = await tezos.contract.at(transaction.recipient);
+            res = await contract?.[transaction.parameters?.entrypoint]?.(
+              transaction.parameters?.value
+            ).send();
+
+            signature = res.raw.opOb.signature;
+            opbytes = res.raw.opbytes;
+            break;
+          }
           default:
             throw "not supported";
         }
