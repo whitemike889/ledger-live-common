@@ -1,6 +1,7 @@
 // @flow
 
 import { Observable } from "rxjs";
+import { BigNumber } from "bignumber.js";
 import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
 import { TezosToolkit, MichelsonMap } from "@taquito/taquito";
 import type { Transaction } from "./types";
@@ -79,7 +80,6 @@ export const signOperation = ({
             }
 
             const contract = await tezos.contract.at(transaction.recipient);
-
             const methodsSigs = contract.parameterSchema.ExtractSignatures();
             const methodSig = methodsSigs.find(
               (m) => m[0] === transaction?.parameters?.entrypoint
@@ -91,41 +91,43 @@ export const signOperation = ({
               break;
             }
 
-            const args = (transaction.parameters?.value as any[]).map(
-              (arg, index) => {
-                const [, ...paramTypes] = methodSig;
-
-                const type =
-                  typeof paramTypes[index] === "string"
-                    ? paramTypes[index]
-                    : Object.keys(paramTypes[index])[0];
-
-                switch (type) {
-                  case "nat": {
-                    const value = Object.values(arg)[0];
-                    return parseInt(value as string, 10);
-                  }
-                  case "address": {
-                    const value = Object.values(arg)[0];
-                    return String(value);
-                  }
-                  case "map":
-                    return new MichelsonMap();
-                  case "list":
-                    return arg || [];
-                  default:
-                    return null;
-                }
-              }
-            );
-
-            console.warn(
-              "\n\n\n\n\nargs",
-              JSON.stringify(args, null, 2),
-              transaction.parameters?.entrypoint
-            );
-
             try {
+              const args = (transaction.parameters?.value as any[]).map(
+                (arg, index) => {
+                  const [, ...paramTypes] = methodSig;
+
+                  const type =
+                    typeof paramTypes[index] === "string"
+                      ? paramTypes[index]
+                      : Object.keys(paramTypes[index])[0];
+
+                  switch (type) {
+                    case "nat": {
+                      const value = Object.values(arg)[0];
+                      return parseInt(value as string, 10);
+                    }
+                    case "address": {
+                      const value = Object.values(arg)[0];
+                      return String(value);
+                    }
+                    case "map":
+                      return MichelsonMap.fromLiteral({
+                        "": "697066733a2f2f516d556b42374455717a784342545331313259724452654b63584d6b687362705a616e7a63326641396d4571576d",
+                      });
+                    case "list":
+                      return arg || [];
+                    default:
+                      return null;
+                  }
+                }
+              );
+
+              console.warn(
+                "\n\n\n\n\nargs",
+                JSON.stringify(args, null, 2),
+                transaction.parameters?.entrypoint
+              );
+
               res = await contract.methods?.[
                 transaction.parameters?.entrypoint
               ](...args).send();
@@ -143,10 +145,6 @@ export const signOperation = ({
           }
           default:
             throw "not supported";
-        }
-
-        if (cancelled) {
-          return;
         }
 
         o.next({ type: "device-signature-granted" });
