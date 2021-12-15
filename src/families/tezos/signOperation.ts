@@ -2,7 +2,7 @@
 
 import { Observable } from "rxjs";
 import { LedgerSigner, DerivationType } from "@taquito/ledger-signer";
-import { TezosToolkit } from "@taquito/taquito";
+import { TezosToolkit, MichelsonMap } from "@taquito/taquito";
 import type { Transaction } from "./types";
 import type { Account, SignOperationEvent } from "../../types";
 import { withDevice } from "../../hw/deviceAccess";
@@ -46,7 +46,6 @@ export const signOperation = ({
 
         let res, signature, opbytes;
 
-        console.trace("bite", transaction);
         switch (transaction.mode) {
           case "send":
             res = await tezos.contract.transfer({
@@ -73,7 +72,6 @@ export const signOperation = ({
             opbytes = res.raw.opbytes;
             break;
           case "contract": {
-            console.trace("contract", "ok");
             if (!transaction.parameters?.entrypoint) {
               res = null;
               opbytes = null;
@@ -81,23 +79,66 @@ export const signOperation = ({
             }
 
             const contract = await tezos.contract.at(transaction.recipient);
-            const methods = contract.parameterSchema.ExtractSignatures();
-            console.trace("methods", JSON.stringify(methods, null, 2));
 
-            const incrementParams = contract?.methods?.[
+            const methodsSigs = contract.parameterSchema.ExtractSignatures();
+            const methodSig = methodsSigs.find(
+              (m) => m[0] === transaction?.parameters?.entrypoint
+            );
+
+            if (!methodSig) {
+              res = null;
+              opbytes = null;
+              break;
+            }
+
+            const args = (transaction.parameters?.value as any[]).map(
+              (arg, index) => {
+                const [, ...paramTypes] = methodSig;
+
+                const type =
+                  typeof paramTypes[index] === "string"
+                    ? paramTypes[index]
+                    : Object.keys(paramTypes[index])[0];
+
+                switch (type) {
+                  case "nat": {
+                    const value = Object.values(arg)[0];
+                    return parseInt(value as string, 10);
+                  }
+                  case "address": {
+                    const value = Object.values(arg)[0];
+                    return String(value);
+                  }
+                  case "map":
+                    return new MichelsonMap();
+                  case "list":
+                    return arg || [];
+                  default:
+                    return null;
+                }
+              }
+            );
+
+            console.warn(
+              "\n\n\n\n\nargs",
+              JSON.stringify(args, null, 2),
               transaction.parameters?.entrypoint
-            ]?.(transaction.parameters?.value);
+            );
 
-            console.trace("params", JSON.stringify(incrementParams, null, 2));
+            try {
+              res = await contract.methods?.[
+                transaction.parameters?.entrypoint
+              ](...args).send();
 
-            res = await contract?.methods?.[
-              transaction.parameters?.entrypoint
-            ]?.(transaction.parameters?.value).send();
+              console.warn({ res });
+              console.warn("res", { res: res.results });
 
-            console.trace("res", { res });
+              signature = res.raw.opOb.signature;
+              opbytes = res.raw.opbytes;
+            } catch (e) {
+              console.error(e);
+            }
 
-            signature = res.raw.opOb.signature;
-            opbytes = res.raw.opbytes;
             break;
           }
           default:
