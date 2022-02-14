@@ -5,6 +5,7 @@ import type {
   CryptoCurrency,
   TokenCurrency,
 } from "../../types";
+import { useMemo } from "react";
 import { getAccountCurrency, flattenAccounts } from "../../account";
 import { useCountervaluesState } from "../../countervalues/react";
 import {
@@ -38,7 +39,10 @@ export function usePortfolio({
   to: Currency;
 }) {
   const state = useCountervaluesState();
-  return getPortfolio(accounts, range, state, to);
+  return useMemo(
+    () => getPortfolio(accounts, range, state, to),
+    [accounts, range, state, to]
+  );
 }
 export function useCurrencyPortfolio({
   accounts: rawAccounts,
@@ -65,9 +69,13 @@ export function useDistribution({
   to: Currency;
 }) {
   const state = useCountervaluesState();
-  return getAssetsDistribution(accounts, state, to, {
-    minShowFirst: 6,
-    maxShowFirst: 6,
-    showFirstThreshold: 0.95,
-  });
+  return useMemo(
+    () =>
+      getAssetsDistribution(accounts, state, to, {
+        minShowFirst: 6,
+        maxShowFirst: 6,
+        showFirstThreshold: 0.95,
+      }),
+    [accounts, state, to]
+  );
 }
