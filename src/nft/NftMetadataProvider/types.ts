@@ -1,4 +1,4 @@
-import { NFTMetadataResponse } from "../../types";
+import { Currency, NFTMetadataResponse } from "../../types";
 
 export type NFTResourceQueued = {
   status: "queued";
@@ -37,7 +37,11 @@ export type NFTMetadataContextState = {
 };
 
 export type NFTMetadataContextAPI = {
-  loadNFTMetadata: (contract: string, tokenId: string) => Promise<void>;
+  loadNFTMetadata: (
+    contract: string,
+    tokenId: string,
+    currency: Currency
+  ) => Promise<void>;
   clearCache: () => void;
 };
 

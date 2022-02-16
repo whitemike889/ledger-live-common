@@ -396,12 +396,12 @@ const envDefinitions = {
     desc: "mock the cryptoassets config and test partner (in the context of app-exchange)",
   },
   NFT_CURRENCIES: {
-    def: "ethereum",
+    def: "ethereum,polygon",
     parser: stringParser,
     desc: "set the currencies where NFT is active",
   },
   NFT_ETH_METADATA_SERVICE: {
-    def: "https://nft.api.live.ledger.com",
+    def: "https://nft-metadata-polygon-api.vercel.app",
     parser: stringParser,
     desc: "service uri used to get the metadata of an nft",
   },

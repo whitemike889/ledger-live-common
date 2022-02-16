@@ -5,9 +5,8 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { Currency, findCryptoCurrencyById } from "@ledgerhq/cryptoassets";
-import { API, apiForCurrency } from "../../api/Ethereum";
-import { NFT, NFTMetadataResponse } from "../../types";
+import { apiForCurrency } from "../../api/Ethereum";
+import { Currency, NFTMetadataResponse } from "../../types";
 import { getNftKey } from "../helpers";
 import {
   Batch,
@@ -19,9 +18,6 @@ import {
 } from "./types";
 import { isOutdated } from "./logic";
 
-const currency: Currency = findCryptoCurrencyById("ethereum")!;
-const ethApi: API = apiForCurrency(currency);
-
 const NftMetadataContext = createContext<NFTMetadataContextType>({
   cache: {},
   loadNFTMetadata: () => Promise.resolve(),
@@ -32,7 +28,9 @@ export const metadataCallBatcher = (() => {
   const batch: BatchElement[] = [];
 
   let debounce;
-  const timeoutBatchCall = () => {
+  const timeoutBatchCall = (currency) => {
+    const api = apiForCurrency(currency);
+
     // Clear the previous scheduled call if it was existing
     clearTimeout(debounce);
 
@@ -53,8 +51,11 @@ export const metadataCallBatcher = (() => {
       batch.length = 0;
 
       // Make the call with all the couples of contract and tokenId at once
-      ethApi
-        .getNFTMetadata(couples)
+      api
+        .getNFTMetadata(
+          couples,
+          currency?.ethereumLikeInfo?.chainId?.toString() ?? "1"
+        )
         .then((res) => {
           // Resolve each batch element with its own resolver and only its response
           res.forEach((metadata, index) => resolvers[index](metadata));
@@ -68,19 +69,19 @@ export const metadataCallBatcher = (() => {
 
   return {
     // Load the metadata for a given couple contract + tokenId
-    load({ contract, tokenId }): Promise<NFTMetadataResponse> {
+    load({ contract, tokenId, currency }): Promise<NFTMetadataResponse> {
       return new Promise((resolve, reject) => {
         batch.push({ couple: { contract, tokenId }, resolve, reject });
-        timeoutBatchCall();
+        timeoutBatchCall(currency);
       });
     },
   };
 })();
 
-// DEPRECATED, use useNftResource
 export function useNftMetadata(
   contract: string | undefined,
-  tokenId: string | undefined
+  tokenId: string | undefined,
+  currency: Currency
 ): NFTResource {
   const { cache, loadNFTMetadata } = useContext(NftMetadataContext);
 
@@ -91,9 +92,9 @@ export function useNftMetadata(
   useEffect(() => {
     if (!contract || !tokenId) return;
     if (!cachedData || isOutdated(cachedData)) {
-      loadNFTMetadata(contract, tokenId);
+      loadNFTMetadata(contract, tokenId, currency);
     }
-  }, [contract, tokenId, cachedData, loadNFTMetadata]);
+  }, [contract, tokenId, cachedData, loadNFTMetadata, currency]);
 
   if (cachedData) {
     return cachedData;
@@ -102,10 +103,6 @@ export function useNftMetadata(
       status: "queued",
     };
   }
-}
-
-export function useNftResource(nft: NFT | undefined): NFTResource {
-  return useNftMetadata(nft?.collection.contract, nft?.tokenId);
 }
 
 export function useNftAPI(): NFTMetadataContextAPI {
@@ -130,7 +127,11 @@ export function NftMetadataProvider({
 
   const api = useMemo(
     () => ({
-      loadNFTMetadata: async (contract: string, tokenId: string) => {
+      loadNFTMetadata: async (
+        contract: string,
+        tokenId: string,
+        currency: Currency
+      ) => {
         const key = getNftKey(contract, tokenId);
 
         setState((oldState) => ({
@@ -147,6 +148,7 @@ export function NftMetadataProvider({
           const { status, result } = await metadataCallBatcher.load({
             contract,
             tokenId,
+            currency,
           });
 
           switch (status) {
