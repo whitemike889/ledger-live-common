@@ -401,7 +401,7 @@ const envDefinitions = {
     desc: "set the currencies where NFT is active",
   },
   NFT_ETH_METADATA_SERVICE: {
-    def: "https://nft.api.live.ledger.com",
+    def: "https://nft.api.live.ledger-stg.com",
     parser: stringParser,
     desc: "service uri used to get the metadata of an nft",
   },
