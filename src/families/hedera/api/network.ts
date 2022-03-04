@@ -20,7 +20,7 @@ export async function buildUnsignedTransaction({
 }): Promise<hedera.TransferTransaction> {
   const { amount } = await calculateAmount({ account, transaction });
   const hbarAmount = hedera.Hbar.fromTinybars(amount);
-  const accountId = account.hederaResources!.accountId;
+  const accountId = account.freshAddress;
 
   return new hedera.TransferTransaction()
     .setNodeAccountIds([new AccountId(3)])
@@ -35,8 +35,9 @@ export interface AccountBalance {
 }
 
 export async function getAccountBalance(
-  accountId: AccountId
+  address: string
 ): Promise<AccountBalance> {
+  const accountId = AccountId.fromString(address);
   const accountBalance = await new hedera.AccountBalanceQuery({
     accountId,
   }).execute(getClient());
