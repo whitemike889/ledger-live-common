@@ -13,12 +13,12 @@ const acceptTransaction: DeviceAction<Transaction, any> = deviceActionFlow({
     {
       title: "Operator",
       button: "Rr",
-      expectedValue: ({ account: { hederaResources } }) => hederaResources?.accountId.toString()!,
+      expectedValue: ({ account }) => account.freshAddress,
     },
     {
       title: "Sender",
       button: "Rr",
-      expectedValue: ({ account: { hederaResources } }) => hederaResources?.accountId.toString()!,
+      expectedValue: ({ account }) => account.freshAddress,
     },
     {
       title: "Recipient",
